@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Musconetcong Lodge #42 — Committee Portal</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a1a;min-height:100vh;padding:0 1rem 3rem}
+
+  /* ── SHARED ── */
+  .container{max-width:720px;margin:0 auto}
+  .page{display:none}
+  .page.active{display:block}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#777;background:none;border:none;cursor:pointer;padding:0;font-family:inherit;margin-bottom:1.5rem;transition:color 0.15s}
+  .back-btn:hover{color:#1a1a1a}
+  .pill{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:600}
+  .pill-form{background:#E6F1FB;color:#0C447C}
+  .pill-info{background:#f1efe8;color:#777;border:1px solid #e5e3dc}
+  .status-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;letter-spacing:0.02em}
+  .status-live{background:#EAF3DE;color:#3B6D11}
+  .status-pending{background:#FAEEDA;color:#854F0B}
+  .status-todo{background:#f1efe8;color:#888;border:1px solid #e5e3dc}
+  input[type=text],input[type=tel],input[type=email],input[type=date],input[type=number],input[type=time],select,textarea{width:100%;font-size:14px;font-family:inherit;color:#1a1a1a;background:#fff;border:1px solid #dddbd4;border-radius:8px;padding:8px 10px;outline:none;transition:border-color 0.15s;-webkit-appearance:none}
+  input:focus,select:focus,textarea:focus{border-color:#185FA5;box-shadow:0 0 0 3px rgba(24,95,165,0.08)}
+  textarea{resize:vertical;line-height:1.5}
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
+
+  /* ── PORTAL ── */
+  .portal-header{padding:2.5rem 0 1.5rem;border-bottom:1px solid #e5e3dc;margin-bottom:2rem;text-align:center}
+  .portal-logo{width:56px;height:56px;margin:0 auto 1rem;background:#fff;border:1px solid #e5e3dc;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .portal-title{font-size:22px;font-weight:600;color:#1a1a1a;letter-spacing:0.01em}
+  .portal-sub{font-size:13px;color:#777;margin-top:5px}
+  .portal-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#185FA5;background:#E6F1FB;border-radius:20px;padding:3px 12px;margin-top:10px;letter-spacing:0.02em}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:2rem}
+  .comm-card{background:#fff;border:1px solid #e5e3dc;border-radius:12px;padding:1.25rem;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;display:flex;flex-direction:column;gap:10px}
+  .comm-card:hover{border-color:#b0b0a8;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+  .card-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px}
+  .card-title{font-size:14px;font-weight:600;color:#1a1a1a;line-height:1.3}
+  .card-desc{font-size:12px;color:#777;line-height:1.55}
+  .card-footer{margin-top:auto;display:flex;align-items:center;gap:6px}
+  .card-arrow{margin-left:auto;color:#aaa;font-size:15px}
+  .comm-card.has-form .card-arrow{color:#185FA5}
+
+  /* ── COMMITTEE PAGE ── */
+  .comm-page-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid #e5e3dc}
+  .comm-page-icon{width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+  .comm-page-title{font-size:20px;font-weight:600;color:#1a1a1a}
+  .comm-page-sub{font-size:13px;color:#777;margin-top:4px;line-height:1.6}
+  .info-section{margin-bottom:1.5rem}
+  .info-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e5e3dc}
+  .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem}
+  .meta-card{background:#f8f7f4;border-radius:8px;padding:12px 14px;border:1px solid #e5e3dc}
+  .meta-card .mk{font-size:11px;color:#aaa;margin-bottom:4px;font-weight:500}
+  .meta-card .mv{font-size:13px;color:#1a1a1a;font-weight:600}
+  .resp-list{list-style:none;padding:0;display:flex;flex-direction:column;gap:4px}
+  .resp-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;padding:3px 0}
+  .btn-primary{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;font-size:13px;font-weight:600;background:#185FA5;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;transition:background 0.15s;text-decoration:none}
+  .btn-primary:hover{background:#0C447C}
+  .coming-soon{background:#f8f7f4;border:1px solid #e5e3dc;border-radius:12px;padding:1.5rem;text-align:center;margin-bottom:1rem}
+  .coming-soon .cs-icon{font-size:28px;color:#ccc;margin-bottom:10px;display:block}
+  .coming-soon p{font-size:13px;color:#999}
+  .steps-list{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+  .step-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:#fff;border:1px solid #e5e3dc;border-radius:8px}
+  .step-num{width:22px;height:22px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .step-body{flex:1}
+  .step-title{font-size:13px;font-weight:500;color:#1a1a1a;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .step-note{font-size:12px;color:#999;margin-top:3px;line-height:1.5}
+  .share-row{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#f8f7f4;border:1px solid #e5e3dc;border-radius:8px;margin-top:1rem}
+  .share-url{font-size:12px;color:#aaa;flex:1;font-family:'SF Mono',Consolas,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .share-copy{font-size:12px;color:#185FA5;background:none;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;padding:0;font-weight:500}
+  .share-copy:hover{text-decoration:underline}
+  .copied-msg{font-size:12px;color:#3B6D11;display:none;font-weight:500}
+
+  /* ── HALL RENTAL FORM ── */
+  .form-page-header{text-align:center;padding:2.5rem 0 1.5rem;border-bottom:1px solid #e5e3dc;margin-bottom:2rem}
+  .lodge-emblem{width:56px;height:56px;margin:0 auto 1rem;background:#fff;border:1px solid #e5e3dc;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .lodge-title{font-size:20px;font-weight:600;color:#1a1a1a;letter-spacing:0.01em}
+  .lodge-sub-sm{font-size:13px;color:#777;margin-top:4px}
+  .form-section{margin-bottom:1.75rem}
+  .section-label{font-size:11px;font-weight:600;letter-spacing:0.08em;color:#aaa;text-transform:uppercase;margin-bottom:0.75rem;padding-bottom:6px;border-bottom:1px solid #e5e3dc}
+  .field-row{display:grid;gap:12px;margin-bottom:12px}
+  .col-2{grid-template-columns:1fr 1fr}
+  .col-full{grid-template-columns:1fr}
+  .name-row{grid-template-columns:5fr 2fr 5fr}
+  .addr-row{grid-template-columns:3fr 2fr 1.2fr 1.2fr}
+  .field{display:flex;flex-direction:column;gap:5px}
+  label{font-size:13px;color:#555}
+  label span.req{color:#c0392b;margin-left:2px}
+  .opt-tag{font-size:11px;color:#aaa;margin-left:4px}
+  .rate-options{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+  .rate-card{border:1px solid #dddbd4;border-radius:8px;padding:10px 12px;cursor:pointer;transition:border-color 0.15s;position:relative;background:#fff}
+  .rate-card:hover{background:#f8f7f4}
+  .rate-card.selected{border:2px solid #185FA5;background:#fff}
+  .rate-card input[type=radio]{position:absolute;opacity:0;pointer-events:none}
+  .rc-label{font-size:13px;font-weight:600;color:#1a1a1a}
+  .rc-desc{font-size:12px;color:#888;margin-top:2px}
+  .rate-card.selected .rc-label{color:#185FA5}
+  .rate-card.selected .rc-desc{color:#185FA5;opacity:0.75}
+  .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .check-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#1a1a1a}
+  .check-item input[type=checkbox]{width:15px;height:15px;accent-color:#185FA5;flex-shrink:0;cursor:pointer}
+  .other-amenity-input{margin-top:10px;display:none}
+  .toggle-group{display:flex;gap:6px}
+  .toggle-btn{flex:1;padding:6px 8px;font-size:12px;white-space:nowrap;border:1px solid #dddbd4;border-radius:8px;background:#fff;color:#777;cursor:pointer;transition:all 0.15s;font-family:inherit;line-height:1.4}
+  .toggle-btn.active{background:#fff;border-color:#185FA5;color:#185FA5;font-weight:600}
+  .terms-block{border:1px solid #dddbd4;border-radius:10px;overflow:hidden;margin-bottom:12px}
+  .terms-toggle{width:100%;padding:11px 14px;background:#f8f7f4;border:none;font-family:inherit;font-size:13px;font-weight:600;color:#1a1a1a;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center}
+  .terms-toggle:hover{background:#f1efe8}
+  .terms-body{display:none;padding:14px;border-top:1px solid #e5e3dc;max-height:280px;overflow-y:auto}
+  .terms-body.open{display:block}
+  .terms-body h4{font-size:12px;font-weight:600;color:#1a1a1a;margin:14px 0 4px}
+  .terms-body h4:first-child{margin-top:0}
+  .terms-body p{font-size:12px;color:#777;line-height:1.65}
+  .agree-row{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;background:#f8f7f4;border-top:1px solid #e5e3dc}
+  .agree-row input[type=checkbox]{width:15px;height:15px;accent-color:#185FA5;flex-shrink:0;margin-top:2px;cursor:pointer}
+  .agree-row label{font-size:13px;color:#1a1a1a;cursor:pointer}
+  .sig-block{border:1px solid #dddbd4;border-radius:10px;overflow:hidden;margin-bottom:1.5rem}
+  .sig-header{padding:11px 14px;background:#f8f7f4;border-bottom:1px solid #e5e3dc}
+  .sig-header p{font-size:12px;color:#777;line-height:1.6;margin-top:4px}
+  .sig-header h3{font-size:13px;font-weight:600;color:#1a1a1a}
+  .sig-fields{padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .sig-input{font-family:Georgia,serif;font-size:16px;font-style:italic;border-bottom:1.5px solid #ccc;border-top:none;border-left:none;border-right:none;border-radius:0;padding:6px 2px;background:transparent;width:100%;outline:none;color:#1a1a1a}
+  .sig-input:focus{border-bottom-color:#185FA5}
+  .lodge-sig-note{font-size:12px;color:#aaa;font-style:italic;padding:0 14px 12px;line-height:1.5}
+  .err{font-size:12px;color:#c0392b;margin-top:3px;display:none}
+  .flat-input-row{margin-top:8px;display:none}
+  .time-row{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:5px}
+  .time-sep{font-size:13px;color:#aaa;text-align:center}
+  .submit-row{display:flex;align-items:center;gap:14px;margin-top:0.5rem}
+  .submit-btn{padding:11px 28px;font-size:14px;font-weight:600;background:#185FA5;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;transition:background 0.15s}
+  .submit-btn:hover{background:#0C447C}
+  .submit-btn:disabled{background:#aaa;cursor:not-allowed}
+  .submit-btn:active:not(:disabled){transform:scale(0.98)}
+  .submit-note{font-size:12px;color:#aaa}
+  .success-banner{display:none;background:#EAF3DE;border:1px solid #97C459;border-radius:10px;padding:16px 18px;font-size:14px;color:#3B6D11;margin-bottom:1.5rem;align-items:center;gap:10px}
+  .chevron{transition:transform 0.2s;display:inline-block}
+  .chevron.open{transform:rotate(180deg)}
+
+
+  /* ── BREAKFAST TRACKER ── */
+  .tool-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem}
+  .btn-secondary{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;font-size:13px;font-weight:600;background:#fff;color:#185FA5;border:1px solid #b9cce0;border-radius:8px;cursor:pointer;font-family:inherit;transition:background 0.15s;text-decoration:none}
+  .btn-secondary:hover{background:#E6F1FB}
+  .dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0 1.25rem}
+  .kpi-card{background:#fff;border:1px solid #e5e3dc;border-radius:12px;padding:14px}
+  .kpi-label{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:5px}
+  .kpi-value{font-size:22px;font-weight:700;color:#1a1a1a}
+  .chart-card{background:#fff;border:1px solid #e5e3dc;border-radius:12px;padding:16px;margin-bottom:14px}
+  .chart-card h3{font-size:14px;margin-bottom:12px;color:#1a1a1a}
+  .chart-wrap{height:280px;position:relative}
+  .breakfast-tabs{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+  .breakfast-tab{padding:8px 14px;border:1px solid #dddbd4;background:#fff;border-radius:8px;color:#777;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .breakfast-tab.active{border-color:#185FA5;color:#185FA5;background:#E6F1FB}
+  .mini-note{font-size:12px;color:#999;line-height:1.5;margin-top:6px}
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     PAGE: PORTAL
+════════════════════════════════════════ -->
+<div id="page-portal" class="page active">
+  <div class="container">
+    <div class="portal-header">
+      <div class="portal-logo" aria-hidden="true">
+        <i class="ti ti-building" style="font-size:24px;color:#999"></i>
+      </div>
+      <div class="portal-title">Musconetcong Lodge #42</div>
+      <div class="portal-sub">Committee Portal &nbsp;·&nbsp; Budd Lake, NJ</div>
+      <div><span class="portal-badge"><i class="ti ti-lock" style="font-size:11px"></i> Members only</span></div>
+    </div>
+    <div class="card-grid" id="cardGrid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: COMMITTEE
+════════════════════════════════════════ -->
+<div id="page-committee" class="page">
+  <div class="container">
+    <button class="back-btn" onclick="goPortal()">
+      <i class="ti ti-arrow-left" style="font-size:15px"></i> All committees
+    </button>
+    <div id="commContent"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: HALL RENTAL FORM
+════════════════════════════════════════ -->
+<div id="page-form" class="page">
+  <div class="container">
+    <button class="back-btn" onclick="goCommittee('fundraising')">
+      <i class="ti ti-arrow-left" style="font-size:15px"></i> Fundraising committee
+    </button>
+
+    <div class="form-page-header">
+      <div class="lodge-emblem" aria-hidden="true">
+        <i class="ti ti-building" style="font-size:24px;color:#999"></i>
+      </div>
+      <div class="lodge-title">Musconetcong Lodge #42</div>
+      <div class="lodge-sub-sm">Hall Rental Request &nbsp;·&nbsp; 20 Old Budd Lake Rd, Budd Lake NJ 07828</div>
+    </div>
+
+    <div id="successBanner" style="display:none">
+      <div style="background:#EAF3DE;border:1px solid #97C459;border-radius:10px;padding:16px 18px;margin-bottom:1rem;display:flex;align-items:flex-start;gap:12px">
+        <i class="ti ti-circle-check" style="font-size:22px;color:#3B6D11;flex-shrink:0;margin-top:1px"></i>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#3B6D11;margin-bottom:3px">Request submitted successfully</div>
+          <div style="font-size:13px;color:#3B6D11;opacity:0.85">A Lodge officer will review availability and approve or deny the request. If approved, the final agreement and calendar invite will be sent automatically.</div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e5e3dc;border-radius:10px;overflow:hidden;margin-bottom:1rem">
+        <div style="padding:12px 16px;background:#f8f7f4;border-bottom:1px solid #e5e3dc;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#aaa">What happens next</div>
+        <div style="padding:14px 16px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="min-width:26px;height:26px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">1</div>
+            <div><div style="font-size:13px;font-weight:500;color:#1a1a1a">Lodge reviews your request</div><div style="font-size:12px;color:#999;margin-top:2px">A Lodge officer confirms availability and reviews your submission. You will receive an email reply to the address you provided.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="min-width:26px;height:26px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">2</div>
+            <div><div style="font-size:13px;font-weight:500;color:#1a1a1a">Agreement sent for countersignature</div><div style="font-size:12px;color:#999;margin-top:2px">The Lodge officer will send a formal rental agreement to your email. Both parties sign electronically or by returning a signed copy.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="min-width:26px;height:26px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">3</div>
+            <div><div style="font-size:13px;font-weight:500;color:#1a1a1a">Signed copy delivered to both parties</div><div style="font-size:12px;color:#999;margin-top:2px">Once fully executed, a final signed copy is emailed to you and retained by the Lodge for records.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="min-width:26px;height:26px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">4</div>
+            <div><div style="font-size:13px;font-weight:500;color:#1a1a1a">Event added to Lodge calendar</div><div style="font-size:12px;color:#999;margin-top:2px">Your event date will be added to the Lodge shared calendar and you will receive a calendar invitation at your email address.</div></div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#aaa">Questions? Contact the Lodge at 20 Old Budd Lake Rd, Budd Lake NJ 07828.</div>
+    </div>
+
+    <form id="rentalForm" novalidate method="POST" action="https://script.google.com/macros/s/AKfycbxuLlHRtg-DckFh9ZDEbBIdcNisaxupStDfaE4J552ciLNhT30OJpMWEyNKTs_uUvYS/exec" target="submitFrame">
+      <input type="hidden" name="form_source" value="Musconetcong Lodge Portal">
+
+      <div class="form-section">
+        <div class="section-label">Renter information</div>
+        <div class="field-row name-row">
+          <div class="field">
+            <label>First name <span class="req">*</span></label>
+            <input type="text" name="first_name" id="first_name" placeholder="Jane" autocomplete="given-name">
+            <div class="err" id="err_first_name">Required</div>
+          </div>
+          <div class="field">
+            <label>M.I. <span class="opt-tag">(opt.)</span></label>
+            <input type="text" name="middle_initial" maxlength="2" placeholder="A" style="text-align:center;text-transform:uppercase">
+          </div>
+          <div class="field">
+            <label>Last name <span class="req">*</span></label>
+            <input type="text" name="last_name" id="last_name" placeholder="Smith" autocomplete="family-name">
+            <div class="err" id="err_last_name">Required</div>
+          </div>
+        </div>
+        <div class="field-row col-2">
+          <div class="field">
+            <label>Phone number <span class="req">*</span></label>
+            <input type="tel" name="renter_phone" id="renter_phone" placeholder="(555) 000-0000" autocomplete="tel">
+            <div class="err" id="err_renter_phone">Required</div>
+          </div>
+          <div class="field">
+            <label>Email address <span class="req">*</span></label>
+            <input type="email" name="renter_email" id="renter_email" placeholder="jane@email.com" autocomplete="email">
+            <div class="err" id="err_renter_email">Valid email required</div>
+          </div>
+        </div>
+        <div class="field-row col-full" style="margin-bottom:12px">
+          <div class="field">
+            <label>Street address</label>
+            <input type="text" name="street" placeholder="123 Main St" autocomplete="address-line1">
+          </div>
+        </div>
+        <div class="field-row addr-row">
+          <div class="field">
+            <label>City</label>
+            <input type="text" name="city" placeholder="Budd Lake" autocomplete="address-level2">
+          </div>
+          <div class="field">
+            <label>State</label>
+            <select name="state" autocomplete="address-level1">
+              <option value="">— select —</option>
+              <option value="NJ" selected>NJ — New Jersey</option>
+              <option value="NY">NY — New York</option>
+              <option value="PA">PA — Pennsylvania</option>
+              <option value="CT">CT</option><option value="DE">DE</option><option value="MD">MD</option><option value="MA">MA</option><option value="NH">NH</option><option value="RI">RI</option><option value="VT">VT</option>
+              <option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option><option value="CA">CA</option><option value="CO">CO</option><option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option><option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option><option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option><option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option><option value="NM">NM</option><option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option><option value="OR">OR</option><option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option><option value="WI">WI</option><option value="WY">WY</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Zip</label>
+            <input type="text" name="zip" placeholder="07828" maxlength="10" inputmode="numeric">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Event details</div>
+        <div class="field-row col-full">
+          <div class="field">
+            <label>Event / occasion description <span class="req">*</span></label>
+            <input type="text" name="event_description" id="event_description" placeholder="Birthday party, memorial service, meeting…">
+            <div class="err" id="err_event_description">Required</div>
+          </div>
+        </div>
+        <div class="field-row col-2">
+          <div class="field">
+            <label>Event date <span class="req">*</span></label>
+            <input type="date" name="event_date" id="event_date">
+            <div class="err" id="err_event_date">Required</div>
+          </div>
+          <div class="field">
+            <label>Estimated attendees</label>
+            <input type="number" name="attendees" min="1" max="200" placeholder="e.g. 50">
+          </div>
+        </div>
+        <div class="field">
+          <label>Rental hours</label>
+          <div class="time-row">
+            <input type="time" name="start_time">
+            <div class="time-sep">to</div>
+            <input type="time" name="end_time">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Rental rate</div>
+        <div class="rate-options">
+          <label class="rate-card selected" id="rc_hourly">
+            <input type="radio" name="rate_type" value="hourly" checked onchange="selectRate('hourly')">
+            <div class="rc-label">Hourly</div>
+            <div class="rc-desc">$150 / hr</div>
+          </label>
+          <label class="rate-card" id="rc_flat">
+            <input type="radio" name="rate_type" value="flat" onchange="selectRate('flat')">
+            <div class="rc-label">Flat rate</div>
+            <div class="rc-desc">Agreed amount</div>
+          </label>
+          <label class="rate-card" id="rc_other_rate">
+            <input type="radio" name="rate_type" value="other" onchange="selectRate('other')">
+            <div class="rc-label">Other</div>
+            <div class="rc-desc">Specify below</div>
+          </label>
+        </div>
+        <div class="flat-input-row" id="flatInputRow">
+          <div class="field">
+            <label>Agreed amount / details</label>
+            <input type="text" name="rate_custom" placeholder="e.g. $500 flat or describe arrangement">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Deposit</div>
+        <div class="field-row col-2">
+          <div class="field">
+            <label>Deposit required?</label>
+            <div class="toggle-group" id="depositReq">
+              <button type="button" class="toggle-btn active" onclick="setToggle('depositReq','yes',this)">Yes — $250</button>
+              <button type="button" class="toggle-btn" onclick="setToggle('depositReq','no',this)">Not required</button>
+            </div>
+            <input type="hidden" name="deposit_required" id="deposit_required" value="yes">
+          </div>
+          <div class="field" id="refundField">
+            <label>Refundable?</label>
+            <div class="toggle-group" id="depositRefund">
+              <button type="button" class="toggle-btn active" onclick="setToggle('depositRefund','refundable',this)">Refundable</button>
+              <button type="button" class="toggle-btn" onclick="setToggle('depositRefund','non-refundable',this)">Non-refundable</button>
+            </div>
+            <input type="hidden" name="deposit_refundable" id="deposit_refundable" value="refundable">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Amenities requested</div>
+        <div class="check-grid">
+          <label class="check-item"><input type="checkbox" name="amenity_av"> Audio / visual equipment</label>
+          <label class="check-item"><input type="checkbox" name="amenity_furniture"> Furniture</label>
+          <label class="check-item"><input type="checkbox" name="amenity_furniture_setup"> Furniture setup & teardown</label>
+          <label class="check-item"><input type="checkbox" name="amenity_kitchen"> Kitchen facilities</label>
+          <label class="check-item"><input type="checkbox" name="amenity_parking"> Parking</label>
+          <label class="check-item"><input type="checkbox" name="amenity_wifi"> Internet / Wi-Fi</label>
+          <label class="check-item"><input type="checkbox" name="amenity_bar"> Bar service</label>
+          <label class="check-item"><input type="checkbox" name="amenity_catering"> Catering service</label>
+          <label class="check-item"><input type="checkbox" name="amenity_security"> Security staff</label>
+          <label class="check-item"><input type="checkbox" name="amenity_trash"> Trash / waste management</label>
+          <label class="check-item"><input type="checkbox" name="amenity_other_check" id="amenityOtherCheck" onchange="toggleOtherAmenity(this)"> Other</label>
+        </div>
+        <div class="other-amenity-input" id="otherAmenityInput">
+          <input type="text" name="amenity_other_text" id="amenityOtherText" placeholder="Describe what you need…">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Insurance & late fee</div>
+        <div class="field-row col-2">
+          <div class="field">
+            <label>Insurance required?</label>
+            <div class="toggle-group" id="insuranceReq">
+              <button type="button" class="toggle-btn active" onclick="setToggle('insuranceReq','yes',this)">Yes — $1M liability</button>
+              <button type="button" class="toggle-btn" onclick="setToggle('insuranceReq','no',this)">Not required</button>
+            </div>
+            <input type="hidden" name="insurance_required" id="insurance_required" value="yes">
+          </div>
+          <div class="field">
+            <label>Late fee</label>
+            <div class="toggle-group" id="lateFeeGroup">
+              <button type="button" class="toggle-btn active" onclick="setToggle('lateFeeGroup','$25/day flat',this)">$25 / day</button>
+              <button type="button" class="toggle-btn" onclick="setToggle('lateFeeGroup','21% interest',this)">21% interest</button>
+              <button type="button" class="toggle-btn" onclick="setToggle('lateFeeGroup','none',this)">None</button>
+            </div>
+            <input type="hidden" name="late_fee" id="late_fee" value="$25/day flat">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Additional notes</div>
+        <div class="field">
+          <label>Special requirements or instructions</label>
+          <textarea name="additional_notes" placeholder="Any setup instructions, special requests, or notes for the Lodge…" style="min-height:72px"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Rental terms & agreement</div>
+        <div class="terms-block">
+          <button type="button" class="terms-toggle" onclick="toggleTerms()" id="termsToggleBtn">
+            <span>View full rental terms</span>
+            <i class="ti ti-chevron-down chevron" id="termsChevron"></i>
+          </button>
+          <div class="terms-body" id="termsBody">
+            <h4>Rental rate & payment</h4>
+            <p>The hourly rate is $150.00/hr or a flat rate as agreed. Payment is due within 3 days of invoice by cash, check, or digital transfer. Overtime beyond the agreed rental period is charged at $150.00/hr pro-rated.</p>
+            <h4>Deposit</h4>
+            <p>A cleaning deposit of $250.00 is due at the time of signing. The deposit is refundable or non-refundable as indicated on this form. The deposit will be returned within a reasonable time following the event, provided the Venue is returned in its original condition.</p>
+            <h4>Cancellation policy</h4>
+            <p>The Renter may cancel without charge with 30 or more days written notice. Cancellations made 15 days prior to the event will be charged 50% of the rental rate plus any expenses incurred by the Lodge in good-faith preparation. Cancellations within 5 days will be charged 100% of the rental cost plus all expenses.</p>
+            <h4>Late fees</h4>
+            <p>Payments not received within the required timeframe will incur either a flat fee of $25.00 per day or interest at 21% per annum compounding monthly, as selected on this form.</p>
+            <h4>Maximum occupancy</h4>
+            <p>A maximum of 200 attendees is permitted at all times due to fire hazard regulations. Violation of this limit constitutes immediate default and terminates this Agreement.</p>
+            <h4>Cleanup responsibility</h4>
+            <p>The Renter is responsible for cleaning the Venue after the event. The Venue must be returned in the same condition as at the start of the Rental Period. Failure to do so may result in forfeiture of the deposit.</p>
+            <h4>Insurance</h4>
+            <p>Where required, the Renter must obtain a Comprehensive General Liability Insurance Policy of not less than $1,000,000.00 covering bodily injury, property damage, and contractual liability. The Lodge shall be named as an additional insured and a Certificate of Insurance must be provided before the Rental Period begins.</p>
+            <h4>Hold harmless</h4>
+            <p>The Renter shall be liable for any physical damages to the Venue, legal actions, and/or loss of reputation or business opportunities that the Lodge may incur as a result of the Renter's or their guests' actions during the Rental Period. The Renter agrees to indemnify and hold harmless the Lodge against any and all legal actions arising from use of the Venue.</p>
+            <h4>Landlord's right to cancel</h4>
+            <p>The Lodge reserves the right to cancel this Agreement with at least 30 days' written notice. If cancellation is not due to Renter breach, all amounts paid including the deposit will be refunded. In the event of natural disaster or acts of God, this Agreement shall be canceled and all amounts refunded.</p>
+            <h4>Dispute resolution</h4>
+            <p>Disputes shall first be resolved through good-faith negotiation for no less than 30 days. If unresolved, the parties agree to mediation with costs shared equally. If mediation fails, disputes shall be submitted to binding arbitration in the same jurisdiction as the Venue.</p>
+            <h4>Governing law</h4>
+            <p>This Agreement is governed by the laws of the State of New Jersey.</p>
+            <h4>Severability & entire agreement</h4>
+            <p>If any provision is found unenforceable, remaining provisions remain in full effect. This Agreement supersedes all prior understandings between the parties.</p>
+          </div>
+          <div class="agree-row">
+            <input type="checkbox" id="agreeTerms" name="agreed_to_terms" value="yes">
+            <label for="agreeTerms">I have read and agree to the full rental terms above <span class="req">*</span></label>
+          </div>
+          <div class="err" id="err_agreeTerms" style="padding:0 14px 10px">You must agree to the terms before submitting.</div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Electronic signature</div>
+        <div class="sig-block">
+          <div class="sig-header">
+            <h3>Renter signature</h3>
+            <p>By typing your full legal name below, you are signing this Agreement electronically. Your typed signature is legally binding under the New Jersey Uniform Electronic Transactions Act (NJSA 12A:12-1 et seq.).</p>
+          </div>
+          <div class="sig-fields">
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label style="font-size:12px;color:#777">Type full legal name to sign <span class="req">*</span></label>
+              <input class="sig-input" type="text" name="renter_signature" id="renter_signature" placeholder="Jane A. Smith" autocomplete="off" spellcheck="false">
+              <div class="err" id="err_renter_signature">Signature required</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label style="font-size:12px;color:#777">Date</label>
+              <input class="sig-input" type="text" id="sigDateDisplay" readonly style="color:#aaa;font-style:normal;font-size:13px">
+              <input type="hidden" name="renter_signature_date" id="renter_signature_date">
+            </div>
+          </div>
+          <div class="lodge-sig-note">
+            <i class="ti ti-info-circle" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>
+            Lodge countersignature: A Lodge officer will review your submission and sign the agreement electronically. You will receive a copy once countersigned.
+          </div>
+        </div>
+        <input type="hidden" name="lodge_signature_status" value="pending_countersignature">
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="submit-btn" id="submitBtn">Submit rental request</button>
+        <span class="submit-note">A Lodge representative will follow up to countersign.</span>
+      </div>
+
+    </form>
+    <iframe name="submitFrame" id="submitFrame" style="display:none"></iframe>
+  </div>
+</div>
+
+
+
+<!-- ═══════════════════════════════════════
+     PAGE: BREAKFAST TRACKER
+════════════════════════════════════════ -->
+<div id="page-breakfast" class="page">
+  <div class="container">
+    <button class="back-btn" onclick="goCommittee('fundraising')">
+      <i class="ti ti-arrow-left" style="font-size:15px"></i> Fundraising committee
+    </button>
+
+    <div class="comm-page-header">
+      <div class="comm-page-icon" style="background:#FAEEDA"><i class="ti ti-coffee" style="font-size:24px;color:#854F0B"></i></div>
+      <div>
+        <div class="comm-page-title">Monthly Breakfast Tracker</div>
+        <div class="comm-page-sub">Enter monthly breakfast results and view fundraising performance trends over time.</div>
+      </div>
+    </div>
+
+    <div class="breakfast-tabs">
+      <button class="breakfast-tab active" id="tabBreakfastEntry" onclick="showBreakfastView('entry')"><i class="ti ti-edit" style="font-size:14px"></i> Enter Report</button>
+      <button class="breakfast-tab" id="tabBreakfastDashboard" onclick="showBreakfastView('dashboard')"><i class="ti ti-chart-line" style="font-size:14px"></i> View Dashboard</button>
+    </div>
+
+    <div id="breakfastEntryView">
+      <div id="breakfastSuccess" style="display:none;background:#EAF3DE;border:1px solid #97C459;border-radius:10px;padding:14px 16px;margin-bottom:1rem;color:#3B6D11;font-size:13px;font-weight:600">
+        Breakfast report submitted. Dashboard will update after Google saves the entry.
+      </div>
+
+      <form id="breakfastForm" method="POST" action="https://script.google.com/macros/s/AKfycbxuLlHRtg-DckFh9ZDEbBIdcNisaxupStDfaE4J552ciLNhT30OJpMWEyNKTs_uUvYS/exec" target="breakfastSubmitFrame" novalidate>
+        <input type="hidden" name="action" value="breakfast_submit">
+
+        <div class="form-section">
+          <div class="section-label">Report Month</div>
+          <div class="field-row col-2">
+            <div class="field">
+              <label>Month <span class="req">*</span></label>
+              <select name="month" id="breakfast_month" required>
+                <option value="">— select —</option>
+                <option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option>
+                <option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Year <span class="req">*</span></label>
+              <input type="number" name="year" id="breakfast_year" min="2020" max="2100" placeholder="2026" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-label">Attendance & Revenue</div>
+          <div class="field-row col-2">
+            <div class="field">
+              <label>Guests <span class="req">*</span></label>
+              <input type="number" name="guests" id="breakfast_guests" min="0" step="1" placeholder="110" required>
+            </div>
+            <div class="field">
+              <label>Coupons</label>
+              <input type="number" name="coupons" id="breakfast_coupons" min="0" step="1" placeholder="4">
+            </div>
+          </div>
+          <div class="field-row col-2">
+            <div class="field">
+              <label>At the door revenue <span class="req">*</span></label>
+              <input type="number" name="door_revenue" id="breakfast_door" min="0" step="0.01" placeholder="1166.00" required>
+            </div>
+            <div class="field">
+              <label>50/50 revenue</label>
+              <input type="number" name="fifty_fifty" id="breakfast_5050" min="0" step="0.01" placeholder="130.00">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-label">Expenses & Totals</div>
+          <div class="field-row col-2">
+            <div class="field">
+              <label>Expenses <span class="req">*</span></label>
+              <input type="number" name="expenses" id="breakfast_expenses" min="0" step="0.01" placeholder="421.70" required>
+            </div>
+            <div class="field">
+              <label>Notes</label>
+              <input type="text" name="notes" placeholder="Optional notes">
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="kpi-card"><div class="kpi-label">Gross Total</div><div class="kpi-value" id="breakfastGrossPreview">$0</div></div>
+            <div class="kpi-card"><div class="kpi-label">Net</div><div class="kpi-value" id="breakfastNetPreview">$0</div></div>
+          </div>
+          <div class="mini-note">Gross is calculated as door revenue + 50/50. Net is calculated as gross minus expenses.</div>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="submit-btn" id="breakfastSubmitBtn">Submit breakfast report</button>
+          <span class="submit-note">Saved to the BreakfastReports tab in Google Sheets.</span>
+        </div>
+      </form>
+      <iframe name="breakfastSubmitFrame" id="breakfastSubmitFrame" style="display:none"></iframe>
+    </div>
+
+    <div id="breakfastDashboardView" style="display:none">
+      <div class="tool-actions">
+        <button class="btn-secondary" onclick="loadBreakfastDashboard()"><i class="ti ti-refresh" style="font-size:15px"></i> Refresh dashboard</button>
+      </div>
+      <div id="breakfastDashboardStatus" class="mini-note">Loading dashboard…</div>
+
+      <div class="dashboard-grid">
+        <div class="kpi-card"><div class="kpi-label">Latest Guests</div><div class="kpi-value" id="kpiLatestGuests">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Latest Net</div><div class="kpi-value" id="kpiLatestNet">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Avg Guests</div><div class="kpi-value" id="kpiAvgGuests">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">YTD Net</div><div class="kpi-value" id="kpiYtdNet">—</div></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Attendance Trend</h3>
+        <div class="chart-wrap"><canvas id="breakfastGuestsChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Net Revenue Trend</h3>
+        <div class="chart-wrap"><canvas id="breakfastNetChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Gross vs Expenses</h3>
+        <div class="chart-wrap"><canvas id="breakfastGrossExpenseChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+const committees=[
+  {id:'trustees',title:'Lodge Trustees',icon:'ti-shield',iconBg:'#E6F1FB',iconColor:'#185FA5',description:'Responsible for oversight and care of Lodge property, finances, and physical assets. Trustees ensure the long-term viability of Lodge holdings.',responsibilities:['Oversight of Lodge property and assets','Financial stewardship and reporting','Coordination with Buildings & Grounds','Annual asset review'],meets:'Monthly — first Tuesday',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'Assign a Brother to lead and serve as primary point of contact.'},{text:'Confirm current trustee roster',note:'Verify which Brothers are actively serving as trustees.'},{text:'Schedule first committee meeting',note:'Set a recurring meeting date and add to the Lodge calendar.'},{text:'Build out committee page content',note:'Add chair name, contact info, and any trustee-specific resources or documents.'},{text:'Determine if a submission form is needed',note:'E.g. a form for property maintenance requests or asset reporting.'}]},
+  {id:'ritual',title:'Masonic Ritual',icon:'ti-book',iconBg:'#EEEDFE',iconColor:'#534AB7',description:'Consolidates Candidate Instruction and Masonic Ritual into a single body. Manages degree work, ritual proficiency, and candidate mentorship.',responsibilities:['Degree work and ritual proficiency','Candidate instruction and mentorship','Ritual review and coaching','Coordination of degree conferrals'],meets:'Bi-weekly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'Designate a senior Brother experienced in ritual work.'},{text:'Document the consolidation',note:'Formally merge Candidate Instruction and Masonic Ritual into one committee in Lodge records.'},{text:'Compile current candidate pipeline',note:'List all candidates in progress and their current degree status.'},{text:'Schedule recurring instruction sessions',note:'Set bi-weekly dates and communicate to all members involved.'},{text:'Decide if a candidate tracking form is needed',note:'A simple intake or progress form could live here for instructors to submit updates.'}]},
+  {id:'buildings',title:'Buildings & Grounds',icon:'ti-tool',iconBg:'#FAEEDA',iconColor:'#854F0B',description:'Maintains the physical condition of the Lodge building and grounds. Coordinates repairs, improvements, and routine maintenance.',responsibilities:['Routine maintenance and repairs','Facility inspections','Contractor coordination','Capital improvement planning'],meets:'As needed / quarterly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'Ideally a Brother with facilities, contracting, or maintenance experience.'},{text:'Conduct a baseline facility inspection',note:'Walk the building and grounds; document current condition and any outstanding issues.'},{text:'Create a maintenance log',note:'Establish a running record of repairs completed and items pending.'},{text:'Identify capital improvement priorities',note:'Work with Finance & Audit to flag any major projects needing budget allocation.'},{text:'Add a maintenance request form to this page',note:'Allow members or hall renters to submit issues directly through the portal.'}]},
+  {id:'finance',title:'Finance & Audit',icon:'ti-chart-bar',iconBg:'#EAF3DE',iconColor:'#3B6D11',description:'Merged Finance and Audit committee for streamlined oversight. Manages the Lodge budget, reviews financial statements, and conducts annual audits.',responsibilities:['Budget preparation and oversight','Monthly financial review','Annual audit coordination','Treasurer support'],meets:'Monthly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'Typically the Treasurer or a Brother with financial background.'},{text:'Document the Finance + Audit merger formally',note:'Update Lodge bylaws or committee records to reflect the consolidated structure.'},{text:'Establish the current-year budget baseline',note:'Pull existing financials and confirm approved budget figures.'},{text:'Set audit schedule',note:'Confirm when the annual audit will occur and who will conduct it.'},{text:'Determine reporting cadence to full Lodge',note:'Decide how often financial summaries are presented at stated meetings.'},{text:'Consider a budget request form',note:'Other committees (e.g. Fraternal Assistance) need a channel to request funds.'}]},
+  {id:'fundraising',title:'Fundraising',icon:'ti-home',iconBg:'#E6F1FB',iconColor:'#185FA5',description:'Combines Hall Rental and Fundraising to centralize revenue-generating activities. Manages venue rentals, fundraising events, and community revenue initiatives.',responsibilities:['Hall rental coordination','Fundraising event planning','Rental contract management','Revenue reporting to Finance'],meets:'Monthly',chair:'TBD',hasForm:true,formLabel:'Submit a hall rental request',nextSteps:[{text:'Hall rental form',note:'Live — submissions route through Google Apps Script for approval and calendar workflows.',status:'live'},{text:'Appoint committee chair',note:'Assign a Brother to oversee rentals and fundraising coordination.',status:'pending'},{text:'Build out fundraising event calendar',note:'Add upcoming fundraisers, ticket sales, or community events to this page.',status:'todo'},{text:'Add event submission / inquiry form',note:'Beyond hall rental — a general fundraising inquiry form for event proposals.',status:'todo'},{text:'Connect rental revenue reporting to Finance & Audit',note:'Establish how rental income gets reported monthly.',status:'todo'}]},
+  {id:'comms',title:'Communications & Outreach',icon:'ti-speakerphone',iconBg:'#FBEAF0',iconColor:'#993556',description:'New committee absorbing Social Media. Expanded to include the Lodge website, newsletter, and off-site community outreach events.',responsibilities:['Social media management','Website updates','Newsletter publication','Community outreach events'],meets:'Monthly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'Ideally a Brother comfortable with digital tools and community engagement.'},{text:'Formally absorb the Social Media Committee',note:'Transfer any existing accounts, passwords, and content ownership to this committee.'},{text:'Audit current digital presence',note:'Review the Lodge website, Facebook, and any other channels — document what exists and what needs updating.'},{text:'Establish a content calendar',note:'Plan monthly posts, newsletter cadence, and outreach event schedule.'},{text:'Add a contact / outreach inquiry form',note:'Allow community members to reach out about events or Lodge info directly from this page.'},{text:'Coordinate with Planning committee',note:'Align communications strategy with the Lodge Vision Plan being developed.'}]},
+  {id:'fraternal',title:'Fraternal Assistance & Charitable Giving',icon:'ti-heart',iconBg:'#FAECE7',iconColor:'#993C1D',description:'New committee absorbing the Blood Bank. Handles charitable donations and coordinating aid for distressed Brothers, subject to Finance/Treasurer budget.',responsibilities:['Blood bank coordination','Charitable donation planning','Distressed Brother assistance','Budget coordination with Finance'],meets:'Quarterly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'A trusted Brother known for discretion and compassion.'},{text:'Formally absorb Blood Bank coordination',note:'Transfer Blood Bank scheduling, contacts, and records to this committee.'},{text:'Establish a charitable giving budget with Finance',note:'Define what annual funding is available for donations and Brother assistance.'},{text:'Create a distressed Brother assistance process',note:'Document how a Brother requests aid — confidentially and with dignity.'},{text:'Add a confidential assistance request form',note:'A private form on this page for Brothers to request help — submissions go only to the chair.'},{text:'Plan first charitable initiative for the year',note:'Identify a cause or organization aligned with Lodge values for a donation or event.'}]},
+  {id:'planning',title:'Planning',icon:'ti-clipboard-list',iconBg:'#E1F5EE',iconColor:'#0F6E56',description:'New committee working with elected officers to develop the next year\'s strategic plan. Currently charged with developing baseline SOPs and a Lodge Vision Plan.',responsibilities:['Annual strategic planning','SOP development','Vision Plan coordination','Officer collaboration'],meets:'Quarterly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'Should be a forward-thinking Brother with officer buy-in.'},{text:'Schedule kickoff meeting with elected officers',note:'Align on scope, timeline, and priorities for the Vision Plan.'},{text:'Draft baseline SOPs for key Lodge operations',note:'Start with the most critical processes — meetings, finances, hall rental, communications.'},{text:'Develop a Vision Plan template',note:'Define what the Lodge wants to accomplish over the next 1–3 years.'},{text:'Coordinate with all other committees',note:'Each committee should contribute goals and resource needs to the plan.'},{text:'Publish the Vision Plan to the portal',note:'Once finalized, make it accessible here so all Brothers can reference it.'}]}
+];
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goPortal(){
+  history.pushState(null,null,window.location.pathname);
+  showPage('portal');
+}
+
+function goCommittee(id){
+  history.pushState(null,null,'#'+id);
+  renderCommittee(id);
+  showPage('committee');
+}
+
+function goForm(){
+  history.pushState(null,null,'#hall-rental');
+  showPage('form');
+}
+
+function goBreakfast(){
+  history.pushState(null,null,'#breakfast-tracker');
+  showPage('breakfast');
+  initBreakfastDefaults();
+}
+
+function statusBadge(s){
+  if(!s)return'';
+  if(s==='live')return'<span class="status-badge status-live"><i class="ti ti-check" style="font-size:10px"></i> Live</span>';
+  if(s==='pending')return'<span class="status-badge status-pending"><i class="ti ti-clock" style="font-size:10px"></i> In progress</span>';
+  return'<span class="status-badge status-todo">To do</span>';
+}
+
+function renderCommittee(id){
+  const c=committees.find(x=>x.id===id);
+  if(!c)return;
+  const shareUrl=window.location.origin+window.location.pathname+'#'+id;
+  const stepsHtml=c.nextSteps.map((s,i)=>`<li class="step-item"><div class="step-num">${i+1}</div><div class="step-body"><div class="step-title">${s.text}${statusBadge(s.status)}</div><div class="step-note">${s.note}</div></div></li>`).join('');
+  const respHtml=c.responsibilities.map(r=>`<li class="resp-item"><i class="ti ti-point" style="font-size:12px;color:#ccc;flex-shrink:0"></i>${r}</li>`).join('');
+  let formBlock='';
+  if(c.hasForm){
+    formBlock=`<div class="info-section"><div class="info-label">Fundraising tools</div><div class="tool-actions"><button class="btn-primary" onclick="goForm()"><i class="ti ti-file-text" style="font-size:15px"></i>${c.formLabel}</button><button class="btn-secondary" onclick="goBreakfast()"><i class="ti ti-coffee" style="font-size:15px"></i>Breakfast tracker</button></div></div>`;
+  } else {
+    formBlock=`<div class="info-section"><div class="info-label">Forms & submissions</div><div class="coming-soon"><i class="ti ti-clock cs-icon"></i><p>A form for this committee is in development. See next steps below.</p></div></div>`;
+  }
+  document.getElementById('commContent').innerHTML=`
+    <div class="comm-page-header">
+      <div class="comm-page-icon" style="background:${c.iconBg}"><i class="ti ${c.icon}" style="font-size:24px;color:${c.iconColor}"></i></div>
+      <div><div class="comm-page-title">${c.title}</div><div class="comm-page-sub">${c.description}</div></div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-card"><div class="mk">Committee chair</div><div class="mv">${c.chair}</div></div>
+      <div class="meta-card"><div class="mk">Meets</div><div class="mv">${c.meets}</div></div>
+    </div>
+    <div class="info-section"><div class="info-label">Responsibilities</div><ul class="resp-list">${respHtml}</ul></div>
+    ${formBlock}
+    <div class="info-section"><div class="info-label">Next steps to complete this page</div><ul class="steps-list">${stepsHtml}</ul></div>
+    <div class="share-row">
+      <i class="ti ti-link" style="font-size:14px;color:#ccc;flex-shrink:0"></i>
+      <span class="share-url">${shareUrl}</span>
+      <button class="share-copy" onclick="copyLink('${shareUrl}')">Copy link</button>
+      <span class="copied-msg" id="copiedMsg">Copied!</span>
+    </div>`;
+}
+
+function copyLink(url){
+  navigator.clipboard.writeText(url).then(()=>{
+    const m=document.getElementById('copiedMsg');
+    if(m){m.style.display='inline';setTimeout(()=>{m.style.display='none';},2000);}
+  });
+}
+
+/* Build portal cards */
+const grid=document.getElementById('cardGrid');
+committees.forEach(c=>{
+  const div=document.createElement('div');
+  div.className='comm-card'+(c.hasForm?' has-form':'');
+  div.setAttribute('role','button');div.setAttribute('tabindex','0');
+  div.innerHTML=`<div class="card-icon" style="background:${c.iconBg}"><i class="ti ${c.icon}" style="color:${c.iconColor}"></i></div><div class="card-title">${c.title}</div><div class="card-desc">${c.description.substring(0,82)}…</div><div class="card-footer"><span class="pill ${c.hasForm?'pill-form':'pill-info'}">${c.hasForm?'Form available':'Info'}</span><i class="ti ti-arrow-right card-arrow"></i></div>`;
+  div.onclick=()=>{goCommittee(c.id);};
+  div.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')goCommittee(c.id);};
+  grid.appendChild(div);
+});
+
+/* Form logic */
+const today=new Date();
+const dateStr=today.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+document.getElementById('sigDateDisplay').value=dateStr;
+document.getElementById('renter_signature_date').value=dateStr;
+
+function toggleTerms(){
+  const body=document.getElementById('termsBody');
+  const chev=document.getElementById('termsChevron');
+  const btn=document.getElementById('termsToggleBtn');
+  const open=body.classList.toggle('open');
+  chev.classList.toggle('open',open);
+  btn.querySelector('span').textContent=open?'Hide rental terms':'View full rental terms';
+}
+
+function toggleOtherAmenity(cb){
+  const box=document.getElementById('otherAmenityInput');
+  box.style.display=cb.checked?'block':'none';
+  if(cb.checked)document.getElementById('amenityOtherText').focus();
+}
+
+function selectRate(val){
+  ['hourly','flat','other'].forEach(k=>{
+    document.getElementById('rc_'+(k==='other'?'other_rate':k)).classList.toggle('selected',k===val);
+  });
+  document.getElementById('flatInputRow').style.display=(val==='flat'||val==='other')?'block':'none';
+}
+
+function setToggle(groupId,value,btn){
+  document.getElementById(groupId).querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const map={depositReq:'deposit_required',depositRefund:'deposit_refundable',insuranceReq:'insurance_required',lateFeeGroup:'late_fee'};
+  if(map[groupId])document.getElementById(map[groupId]).value=value;
+  if(groupId==='depositReq'){
+    const rf=document.getElementById('refundField');
+    rf.style.opacity=(value==='no')?'0.4':'1';
+    rf.style.pointerEvents=(value==='no')?'none':'auto';
+  }
+}
+
+function validateForm(){
+  const fields=['first_name','last_name','renter_phone','renter_email','event_description','event_date','renter_signature'];
+  let ok=true;
+  fields.forEach(id=>{
+    const el=document.getElementById(id);
+    const err=document.getElementById('err_'+id);
+    const empty=!el.value.trim();
+    const emailBad=(id==='renter_email'&&!empty&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value));
+    if(err)err.style.display=(empty||emailBad)?'block':'none';
+    if(empty||emailBad)ok=false;
+  });
+  const agreed=document.getElementById('agreeTerms').checked;
+  document.getElementById('err_agreeTerms').style.display=agreed?'none':'block';
+  if(!agreed)ok=false;
+  return ok;
+}
+
+document.getElementById('rentalForm').addEventListener('submit',function(e){
+  if(!validateForm()){
+    e.preventDefault();
+    const firstErr=[...document.querySelectorAll('.err')].find(x=>x.style.display==='block');
+    if(firstErr){
+      firstErr.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+    alert('Please complete the required fields before submitting.');
+    return false;
+  }
+  const btn=document.getElementById('submitBtn');
+  btn.textContent='Submitting…';
+  btn.disabled=true;
+
+  // Standard form POST to a hidden iframe avoids browser/CORS issues with Google Apps Script.
+  setTimeout(()=>{
+    document.getElementById('rentalForm').style.display='none';
+    const b=document.getElementById('successBanner');
+    b.style.display='block';
+    b.scrollIntoView({behavior:'smooth',block:'start'});
+  },900);
+});
+
+
+
+/* Breakfast tracker logic */
+let breakfastCharts = {};
+
+function initBreakfastDefaults(){
+  const now = new Date();
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const m = document.getElementById('breakfast_month');
+  const y = document.getElementById('breakfast_year');
+  if(m && !m.value) m.value = monthNames[now.getMonth()];
+  if(y && !y.value) y.value = now.getFullYear();
+  updateBreakfastPreview();
+}
+
+function money(n){
+  return '$' + Number(n || 0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function numVal(id){
+  const el = document.getElementById(id);
+  return el ? Number(el.value || 0) : 0;
+}
+
+function updateBreakfastPreview(){
+  const gross = numVal('breakfast_door') + numVal('breakfast_5050');
+  const net = gross - numVal('breakfast_expenses');
+  const g = document.getElementById('breakfastGrossPreview');
+  const n = document.getElementById('breakfastNetPreview');
+  if(g) g.textContent = money(gross);
+  if(n) n.textContent = money(net);
+}
+['breakfast_door','breakfast_5050','breakfast_expenses'].forEach(id=>{
+  document.addEventListener('input', e=>{ if(e.target && e.target.id===id) updateBreakfastPreview(); });
+});
+
+function showBreakfastView(view){
+  document.getElementById('breakfastEntryView').style.display = view==='entry' ? 'block' : 'none';
+  document.getElementById('breakfastDashboardView').style.display = view==='dashboard' ? 'block' : 'none';
+  document.getElementById('tabBreakfastEntry').classList.toggle('active', view==='entry');
+  document.getElementById('tabBreakfastDashboard').classList.toggle('active', view==='dashboard');
+  if(view==='dashboard') loadBreakfastDashboard();
+}
+
+const breakfastFrame = document.getElementById('breakfastSubmitFrame');
+if(breakfastFrame){
+  breakfastFrame.addEventListener('load', function(){
+    const form = document.getElementById('breakfastForm');
+    const btn = document.getElementById('breakfastSubmitBtn');
+    if(form && form.dataset.submitted === 'yes'){
+      document.getElementById('breakfastSuccess').style.display='block';
+      btn.textContent='Submit breakfast report';
+      btn.disabled=false;
+      form.reset();
+      initBreakfastDefaults();
+      setTimeout(()=>{ document.getElementById('breakfastSuccess').style.display='none'; }, 5000);
+    }
+  });
+}
+
+const breakfastForm = document.getElementById('breakfastForm');
+if(breakfastForm){
+  breakfastForm.addEventListener('submit', function(e){
+    const required = ['breakfast_month','breakfast_year','breakfast_guests','breakfast_door','breakfast_expenses'];
+    for(const id of required){
+      const el = document.getElementById(id);
+      if(!el || !String(el.value).trim()){
+        e.preventDefault();
+        alert('Please complete the required breakfast report fields.');
+        if(el) el.focus();
+        return;
+      }
+    }
+    this.dataset.submitted='yes';
+    const btn = document.getElementById('breakfastSubmitBtn');
+    btn.textContent='Submitting…';
+    btn.disabled=true;
+  });
+}
+
+function loadBreakfastDashboard(){
+  const view = document.getElementById('breakfastDashboardView');
+  if(!view) return;
+
+  view.innerHTML = `
+    <div class="tool-actions">
+      <button class="btn-secondary" onclick="loadBreakfastDashboard()">
+        <i class="ti ti-refresh" style="font-size:15px"></i> Refresh dashboard
+      </button>
+    </div>
+    <div id="breakfastDashboardStatus" class="mini-note" style="margin-bottom:10px">
+      Loading dashboard from Google…
+    </div>
+    <iframe
+      id="breakfastDashboardFrame"
+      src="https://script.google.com/macros/s/AKfycbxuLlHRtg-DckFh9ZDEbBIdcNisaxupStDfaE4J552ciLNhT30OJpMWEyNKTs_uUvYS/exec?action=breakfast_dashboard_page&_=${Date.now()}"
+      style="width:100%;height:1250px;border:1px solid #e5e3dc;border-radius:12px;background:#fff"
+      loading="lazy">
+    </iframe>
+  `;
+
+  const frame = document.getElementById('breakfastDashboardFrame');
+  const status = document.getElementById('breakfastDashboardStatus');
+
+  frame.onload = function(){
+    if(status) status.textContent = 'Dashboard loaded from Google Sheets.';
+  };
+
+  frame.onerror = function(){
+    if(status) status.textContent = 'Dashboard could not load. Check Apps Script deployment.';
+  };
+}
+
+function renderBreakfastDashboard(payload){
+  // Legacy fallback only. The current dashboard loads through an iframe.
+  console.log('Legacy dashboard callback received:', payload);
+}
+
+function makeChart(canvasId,type,labels,datasets,yLabel){
+  const ctx = document.getElementById(canvasId);
+  if(!ctx || typeof Chart === 'undefined') return;
+  if(breakfastCharts[canvasId]) breakfastCharts[canvasId].destroy();
+  breakfastCharts[canvasId] = new Chart(ctx,{
+    type,
+    data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:datasets.length>1}},scales:{y:{beginAtZero:true,title:{display:true,text:yLabel}}}}
+  });
+}
+
+/* Hash routing */
+window.addEventListener('popstate',routeHash);
+function routeHash(){
+  const hash=window.location.hash.replace('#','');
+  if(hash==='hall-rental'){showPage('form');return;}
+  if(hash==='breakfast-tracker'){showPage('breakfast');initBreakfastDefaults();return;}
+  if(hash){
+    const match=committees.find(c=>c.id===hash);
+    if(match){renderCommittee(match.id);showPage('committee');return;}
+  }
+  showPage('portal');
+}
+routeHash();
+</script>
+</body>
+</html>
