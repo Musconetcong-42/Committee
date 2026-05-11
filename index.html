@@ -238,7 +238,7 @@
       <div style="font-size:12px;color:#aaa">Questions? Contact the Lodge at 20 Old Budd Lake Rd, Budd Lake NJ 07828.</div>
     </div>
 
-    <form id="rentalForm" novalidate method="POST" action="https://script.google.com/macros/s/AKfycbzXK6vwhmSGisQkxnXXugth4x9D7fnqKfUUpsKZ-BQtPtdFxor5DzzeHUXGrCVNq7CQ/exec" target="submitFrame">
+    <form id="rentalForm" novalidate method="POST" action="https://script.google.com/macros/s/AKfycbyPPmVfSGxpou-kUaj3nKHfQN_nOIPKQy-onfAGa2j-iG6ae7u-qRKbmGpg7HZH0-o/exec" target="submitFrame">
       <input type="hidden" name="form_source" value="Musconetcong Lodge Portal">
 
       <div class="form-section">
@@ -537,7 +537,7 @@
         Breakfast report submitted. Dashboard will update after Google saves the entry.
       </div>
 
-      <form id="breakfastForm" method="POST" action="https://script.google.com/macros/s/AKfycbzXK6vwhmSGisQkxnXXugth4x9D7fnqKfUUpsKZ-BQtPtdFxor5DzzeHUXGrCVNq7CQ/exec" target="breakfastSubmitFrame" novalidate>
+      <form id="breakfastForm" method="POST" action="https://script.google.com/macros/s/AKfycbyPPmVfSGxpou-kUaj3nKHfQN_nOIPKQy-onfAGa2j-iG6ae7u-qRKbmGpg7HZH0-o/exec" target="breakfastSubmitFrame" novalidate>
         <input type="hidden" name="action" value="breakfast_submit">
 
         <div class="form-section">
@@ -907,7 +907,7 @@ function loadBreakfastDashboard(){
   if(old) old.remove();
   const script = document.createElement('script');
   script.id = 'breakfastJsonp';
-  script.src = 'https://script.google.com/macros/s/AKfycbzXK6vwhmSGisQkxnXXugth4x9D7fnqKfUUpsKZ-BQtPtdFxor5DzzeHUXGrCVNq7CQ/exec?action=breakfast_data&callback=renderBreakfastDashboard&_=' + Date.now();
+  script.src = 'https://script.google.com/macros/s/AKfycbyPPmVfSGxpou-kUaj3nKHfQN_nOIPKQy-onfAGa2j-iG6ae7u-qRKbmGpg7HZH0-o/exec?action=breakfast_data&callback=renderBreakfastDashboard&_=' + Date.now();
   script.onerror = function(){ if(status) status.textContent='Could not load dashboard data. Make sure the Apps Script v3 is deployed.'; };
   document.body.appendChild(script);
 }
