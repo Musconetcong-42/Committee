@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Musconetcong Lodge #42 — Committee Portal</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a1a;min-height:100vh;padding:0 1rem 3rem}
@@ -137,6 +138,24 @@
   .success-banner{display:none;background:#EAF3DE;border:1px solid #97C459;border-radius:10px;padding:16px 18px;font-size:14px;color:#3B6D11;margin-bottom:1.5rem;align-items:center;gap:10px}
   .chevron{transition:transform 0.2s;display:inline-block}
   .chevron.open{transform:rotate(180deg)}
+
+
+  /* ── BREAKFAST TRACKER ── */
+  .tool-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem}
+  .btn-secondary{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;font-size:13px;font-weight:600;background:#fff;color:#185FA5;border:1px solid #b9cce0;border-radius:8px;cursor:pointer;font-family:inherit;transition:background 0.15s;text-decoration:none}
+  .btn-secondary:hover{background:#E6F1FB}
+  .dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0 1.25rem}
+  .kpi-card{background:#fff;border:1px solid #e5e3dc;border-radius:12px;padding:14px}
+  .kpi-label{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:5px}
+  .kpi-value{font-size:22px;font-weight:700;color:#1a1a1a}
+  .chart-card{background:#fff;border:1px solid #e5e3dc;border-radius:12px;padding:16px;margin-bottom:14px}
+  .chart-card h3{font-size:14px;margin-bottom:12px;color:#1a1a1a}
+  .chart-wrap{height:280px;position:relative}
+  .breakfast-tabs{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+  .breakfast-tab{padding:8px 14px;border:1px solid #dddbd4;background:#fff;border-radius:8px;color:#777;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .breakfast-tab.active{border-color:#185FA5;color:#185FA5;background:#E6F1FB}
+  .mini-note{font-size:12px;color:#999;line-height:1.5;margin-top:6px}
+
 </style>
 </head>
 <body>
@@ -489,6 +508,137 @@
   </div>
 </div>
 
+
+
+<!-- ═══════════════════════════════════════
+     PAGE: BREAKFAST TRACKER
+════════════════════════════════════════ -->
+<div id="page-breakfast" class="page">
+  <div class="container">
+    <button class="back-btn" onclick="goCommittee('fundraising')">
+      <i class="ti ti-arrow-left" style="font-size:15px"></i> Fundraising committee
+    </button>
+
+    <div class="comm-page-header">
+      <div class="comm-page-icon" style="background:#FAEEDA"><i class="ti ti-coffee" style="font-size:24px;color:#854F0B"></i></div>
+      <div>
+        <div class="comm-page-title">Monthly Breakfast Tracker</div>
+        <div class="comm-page-sub">Enter monthly breakfast results and view fundraising performance trends over time.</div>
+      </div>
+    </div>
+
+    <div class="breakfast-tabs">
+      <button class="breakfast-tab active" id="tabBreakfastEntry" onclick="showBreakfastView('entry')"><i class="ti ti-edit" style="font-size:14px"></i> Enter Report</button>
+      <button class="breakfast-tab" id="tabBreakfastDashboard" onclick="showBreakfastView('dashboard')"><i class="ti ti-chart-line" style="font-size:14px"></i> View Dashboard</button>
+    </div>
+
+    <div id="breakfastEntryView">
+      <div id="breakfastSuccess" style="display:none;background:#EAF3DE;border:1px solid #97C459;border-radius:10px;padding:14px 16px;margin-bottom:1rem;color:#3B6D11;font-size:13px;font-weight:600">
+        Breakfast report submitted. Dashboard will update after Google saves the entry.
+      </div>
+
+      <form id="breakfastForm" method="POST" action="https://script.google.com/macros/s/AKfycbzXK6vwhmSGisQkxnXXugth4x9D7fnqKfUUpsKZ-BQtPtdFxor5DzzeHUXGrCVNq7CQ/exec" target="breakfastSubmitFrame" novalidate>
+        <input type="hidden" name="action" value="breakfast_submit">
+
+        <div class="form-section">
+          <div class="section-label">Report Month</div>
+          <div class="field-row col-2">
+            <div class="field">
+              <label>Month <span class="req">*</span></label>
+              <select name="month" id="breakfast_month" required>
+                <option value="">— select —</option>
+                <option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option>
+                <option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Year <span class="req">*</span></label>
+              <input type="number" name="year" id="breakfast_year" min="2020" max="2100" placeholder="2026" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-label">Attendance & Revenue</div>
+          <div class="field-row col-2">
+            <div class="field">
+              <label>Guests <span class="req">*</span></label>
+              <input type="number" name="guests" id="breakfast_guests" min="0" step="1" placeholder="110" required>
+            </div>
+            <div class="field">
+              <label>Coupons</label>
+              <input type="number" name="coupons" id="breakfast_coupons" min="0" step="1" placeholder="4">
+            </div>
+          </div>
+          <div class="field-row col-2">
+            <div class="field">
+              <label>At the door revenue <span class="req">*</span></label>
+              <input type="number" name="door_revenue" id="breakfast_door" min="0" step="0.01" placeholder="1166.00" required>
+            </div>
+            <div class="field">
+              <label>50/50 revenue</label>
+              <input type="number" name="fifty_fifty" id="breakfast_5050" min="0" step="0.01" placeholder="130.00">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-label">Expenses & Totals</div>
+          <div class="field-row col-2">
+            <div class="field">
+              <label>Expenses <span class="req">*</span></label>
+              <input type="number" name="expenses" id="breakfast_expenses" min="0" step="0.01" placeholder="421.70" required>
+            </div>
+            <div class="field">
+              <label>Notes</label>
+              <input type="text" name="notes" placeholder="Optional notes">
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="kpi-card"><div class="kpi-label">Gross Total</div><div class="kpi-value" id="breakfastGrossPreview">$0</div></div>
+            <div class="kpi-card"><div class="kpi-label">Net</div><div class="kpi-value" id="breakfastNetPreview">$0</div></div>
+          </div>
+          <div class="mini-note">Gross is calculated as door revenue + 50/50. Net is calculated as gross minus expenses.</div>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="submit-btn" id="breakfastSubmitBtn">Submit breakfast report</button>
+          <span class="submit-note">Saved to the Breakfast tab in Google Sheets.</span>
+        </div>
+      </form>
+      <iframe name="breakfastSubmitFrame" id="breakfastSubmitFrame" style="display:none"></iframe>
+    </div>
+
+    <div id="breakfastDashboardView" style="display:none">
+      <div class="tool-actions">
+        <button class="btn-secondary" onclick="loadBreakfastDashboard()"><i class="ti ti-refresh" style="font-size:15px"></i> Refresh dashboard</button>
+      </div>
+      <div id="breakfastDashboardStatus" class="mini-note">Loading dashboard…</div>
+
+      <div class="dashboard-grid">
+        <div class="kpi-card"><div class="kpi-label">Latest Guests</div><div class="kpi-value" id="kpiLatestGuests">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Latest Net</div><div class="kpi-value" id="kpiLatestNet">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Avg Guests</div><div class="kpi-value" id="kpiAvgGuests">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">YTD Net</div><div class="kpi-value" id="kpiYtdNet">—</div></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Attendance Trend</h3>
+        <div class="chart-wrap"><canvas id="breakfastGuestsChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Net Revenue Trend</h3>
+        <div class="chart-wrap"><canvas id="breakfastNetChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Gross vs Expenses</h3>
+        <div class="chart-wrap"><canvas id="breakfastGrossExpenseChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════
      JAVASCRIPT
 ════════════════════════════════════════ -->
@@ -498,7 +648,7 @@ const committees=[
   {id:'ritual',title:'Masonic Ritual',icon:'ti-book',iconBg:'#EEEDFE',iconColor:'#534AB7',description:'Consolidates Candidate Instruction and Masonic Ritual into a single body. Manages degree work, ritual proficiency, and candidate mentorship.',responsibilities:['Degree work and ritual proficiency','Candidate instruction and mentorship','Ritual review and coaching','Coordination of degree conferrals'],meets:'Bi-weekly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'Designate a senior Brother experienced in ritual work.'},{text:'Document the consolidation',note:'Formally merge Candidate Instruction and Masonic Ritual into one committee in Lodge records.'},{text:'Compile current candidate pipeline',note:'List all candidates in progress and their current degree status.'},{text:'Schedule recurring instruction sessions',note:'Set bi-weekly dates and communicate to all members involved.'},{text:'Decide if a candidate tracking form is needed',note:'A simple intake or progress form could live here for instructors to submit updates.'}]},
   {id:'buildings',title:'Buildings & Grounds',icon:'ti-tool',iconBg:'#FAEEDA',iconColor:'#854F0B',description:'Maintains the physical condition of the Lodge building and grounds. Coordinates repairs, improvements, and routine maintenance.',responsibilities:['Routine maintenance and repairs','Facility inspections','Contractor coordination','Capital improvement planning'],meets:'As needed / quarterly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'Ideally a Brother with facilities, contracting, or maintenance experience.'},{text:'Conduct a baseline facility inspection',note:'Walk the building and grounds; document current condition and any outstanding issues.'},{text:'Create a maintenance log',note:'Establish a running record of repairs completed and items pending.'},{text:'Identify capital improvement priorities',note:'Work with Finance & Audit to flag any major projects needing budget allocation.'},{text:'Add a maintenance request form to this page',note:'Allow members or hall renters to submit issues directly through the portal.'}]},
   {id:'finance',title:'Finance & Audit',icon:'ti-chart-bar',iconBg:'#EAF3DE',iconColor:'#3B6D11',description:'Merged Finance and Audit committee for streamlined oversight. Manages the Lodge budget, reviews financial statements, and conducts annual audits.',responsibilities:['Budget preparation and oversight','Monthly financial review','Annual audit coordination','Treasurer support'],meets:'Monthly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'Typically the Treasurer or a Brother with financial background.'},{text:'Document the Finance + Audit merger formally',note:'Update Lodge bylaws or committee records to reflect the consolidated structure.'},{text:'Establish the current-year budget baseline',note:'Pull existing financials and confirm approved budget figures.'},{text:'Set audit schedule',note:'Confirm when the annual audit will occur and who will conduct it.'},{text:'Determine reporting cadence to full Lodge',note:'Decide how often financial summaries are presented at stated meetings.'},{text:'Consider a budget request form',note:'Other committees (e.g. Fraternal Assistance) need a channel to request funds.'}]},
-  {id:'fundraising',title:'Fundraising',icon:'ti-home',iconBg:'#E6F1FB',iconColor:'#185FA5',description:'Combines Hall Rental and Fundraising to centralize revenue-generating activities. Manages venue rentals, fundraising events, and community revenue initiatives.',responsibilities:['Hall rental coordination','Fundraising event planning','Rental contract management','Revenue reporting to Finance'],meets:'Monthly',chair:'TBD',hasForm:true,formLabel:'Submit a hall rental request',nextSteps:[{text:'Hall rental form',note:'Live — submissions go directly to the Lodge email via Formspree.',status:'live'},{text:'Appoint committee chair',note:'Assign a Brother to oversee rentals and fundraising coordination.',status:'pending'},{text:'Build out fundraising event calendar',note:'Add upcoming fundraisers, ticket sales, or community events to this page.',status:'todo'},{text:'Add event submission / inquiry form',note:'Beyond hall rental — a general fundraising inquiry form for event proposals.',status:'todo'},{text:'Connect rental revenue reporting to Finance & Audit',note:'Establish how rental income gets reported monthly.',status:'todo'}]},
+  {id:'fundraising',title:'Fundraising',icon:'ti-home',iconBg:'#E6F1FB',iconColor:'#185FA5',description:'Combines Hall Rental and Fundraising to centralize revenue-generating activities. Manages venue rentals, fundraising events, and community revenue initiatives.',responsibilities:['Hall rental coordination','Fundraising event planning','Rental contract management','Revenue reporting to Finance'],meets:'Monthly',chair:'TBD',hasForm:true,formLabel:'Submit a hall rental request',nextSteps:[{text:'Hall rental form',note:'Live — submissions route through Google Apps Script for approval and calendar workflows.',status:'live'},{text:'Appoint committee chair',note:'Assign a Brother to oversee rentals and fundraising coordination.',status:'pending'},{text:'Build out fundraising event calendar',note:'Add upcoming fundraisers, ticket sales, or community events to this page.',status:'todo'},{text:'Add event submission / inquiry form',note:'Beyond hall rental — a general fundraising inquiry form for event proposals.',status:'todo'},{text:'Connect rental revenue reporting to Finance & Audit',note:'Establish how rental income gets reported monthly.',status:'todo'}]},
   {id:'comms',title:'Communications & Outreach',icon:'ti-speakerphone',iconBg:'#FBEAF0',iconColor:'#993556',description:'New committee absorbing Social Media. Expanded to include the Lodge website, newsletter, and off-site community outreach events.',responsibilities:['Social media management','Website updates','Newsletter publication','Community outreach events'],meets:'Monthly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'Ideally a Brother comfortable with digital tools and community engagement.'},{text:'Formally absorb the Social Media Committee',note:'Transfer any existing accounts, passwords, and content ownership to this committee.'},{text:'Audit current digital presence',note:'Review the Lodge website, Facebook, and any other channels — document what exists and what needs updating.'},{text:'Establish a content calendar',note:'Plan monthly posts, newsletter cadence, and outreach event schedule.'},{text:'Add a contact / outreach inquiry form',note:'Allow community members to reach out about events or Lodge info directly from this page.'},{text:'Coordinate with Planning committee',note:'Align communications strategy with the Lodge Vision Plan being developed.'}]},
   {id:'fraternal',title:'Fraternal Assistance & Charitable Giving',icon:'ti-heart',iconBg:'#FAECE7',iconColor:'#993C1D',description:'New committee absorbing the Blood Bank. Handles charitable donations and coordinating aid for distressed Brothers, subject to Finance/Treasurer budget.',responsibilities:['Blood bank coordination','Charitable donation planning','Distressed Brother assistance','Budget coordination with Finance'],meets:'Quarterly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'A trusted Brother known for discretion and compassion.'},{text:'Formally absorb Blood Bank coordination',note:'Transfer Blood Bank scheduling, contacts, and records to this committee.'},{text:'Establish a charitable giving budget with Finance',note:'Define what annual funding is available for donations and Brother assistance.'},{text:'Create a distressed Brother assistance process',note:'Document how a Brother requests aid — confidentially and with dignity.'},{text:'Add a confidential assistance request form',note:'A private form on this page for Brothers to request help — submissions go only to the chair.'},{text:'Plan first charitable initiative for the year',note:'Identify a cause or organization aligned with Lodge values for a donation or event.'}]},
   {id:'planning',title:'Planning',icon:'ti-clipboard-list',iconBg:'#E1F5EE',iconColor:'#0F6E56',description:'New committee working with elected officers to develop the next year\'s strategic plan. Currently charged with developing baseline SOPs and a Lodge Vision Plan.',responsibilities:['Annual strategic planning','SOP development','Vision Plan coordination','Officer collaboration'],meets:'Quarterly',chair:'TBD',hasForm:false,nextSteps:[{text:'Appoint committee chair',note:'Should be a forward-thinking Brother with officer buy-in.'},{text:'Schedule kickoff meeting with elected officers',note:'Align on scope, timeline, and priorities for the Vision Plan.'},{text:'Draft baseline SOPs for key Lodge operations',note:'Start with the most critical processes — meetings, finances, hall rental, communications.'},{text:'Develop a Vision Plan template',note:'Define what the Lodge wants to accomplish over the next 1–3 years.'},{text:'Coordinate with all other committees',note:'Each committee should contribute goals and resource needs to the plan.'},{text:'Publish the Vision Plan to the portal',note:'Once finalized, make it accessible here so all Brothers can reference it.'}]}
@@ -526,6 +676,12 @@ function goForm(){
   showPage('form');
 }
 
+function goBreakfast(){
+  history.pushState(null,null,'#breakfast-tracker');
+  showPage('breakfast');
+  initBreakfastDefaults();
+}
+
 function statusBadge(s){
   if(!s)return'';
   if(s==='live')return'<span class="status-badge status-live"><i class="ti ti-check" style="font-size:10px"></i> Live</span>';
@@ -541,7 +697,7 @@ function renderCommittee(id){
   const respHtml=c.responsibilities.map(r=>`<li class="resp-item"><i class="ti ti-point" style="font-size:12px;color:#ccc;flex-shrink:0"></i>${r}</li>`).join('');
   let formBlock='';
   if(c.hasForm){
-    formBlock=`<div class="info-section"><div class="info-label">Submit a request</div><button class="btn-primary" onclick="goForm()"><i class="ti ti-file-text" style="font-size:15px"></i>${c.formLabel}</button></div>`;
+    formBlock=`<div class="info-section"><div class="info-label">Fundraising tools</div><div class="tool-actions"><button class="btn-primary" onclick="goForm()"><i class="ti ti-file-text" style="font-size:15px"></i>${c.formLabel}</button><button class="btn-secondary" onclick="goBreakfast()"><i class="ti ti-coffee" style="font-size:15px"></i>Breakfast tracker</button></div></div>`;
   } else {
     formBlock=`<div class="info-section"><div class="info-label">Forms & submissions</div><div class="coming-soon"><i class="ti ti-clock cs-icon"></i><p>A form for this committee is in development. See next steps below.</p></div></div>`;
   }
@@ -664,11 +820,141 @@ document.getElementById('rentalForm').addEventListener('submit',function(e){
   },900);
 });
 
+
+
+/* Breakfast tracker logic */
+let breakfastCharts = {};
+
+function initBreakfastDefaults(){
+  const now = new Date();
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const m = document.getElementById('breakfast_month');
+  const y = document.getElementById('breakfast_year');
+  if(m && !m.value) m.value = monthNames[now.getMonth()];
+  if(y && !y.value) y.value = now.getFullYear();
+  updateBreakfastPreview();
+}
+
+function money(n){
+  return '$' + Number(n || 0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function numVal(id){
+  const el = document.getElementById(id);
+  return el ? Number(el.value || 0) : 0;
+}
+
+function updateBreakfastPreview(){
+  const gross = numVal('breakfast_door') + numVal('breakfast_5050');
+  const net = gross - numVal('breakfast_expenses');
+  const g = document.getElementById('breakfastGrossPreview');
+  const n = document.getElementById('breakfastNetPreview');
+  if(g) g.textContent = money(gross);
+  if(n) n.textContent = money(net);
+}
+['breakfast_door','breakfast_5050','breakfast_expenses'].forEach(id=>{
+  document.addEventListener('input', e=>{ if(e.target && e.target.id===id) updateBreakfastPreview(); });
+});
+
+function showBreakfastView(view){
+  document.getElementById('breakfastEntryView').style.display = view==='entry' ? 'block' : 'none';
+  document.getElementById('breakfastDashboardView').style.display = view==='dashboard' ? 'block' : 'none';
+  document.getElementById('tabBreakfastEntry').classList.toggle('active', view==='entry');
+  document.getElementById('tabBreakfastDashboard').classList.toggle('active', view==='dashboard');
+  if(view==='dashboard') loadBreakfastDashboard();
+}
+
+const breakfastFrame = document.getElementById('breakfastSubmitFrame');
+if(breakfastFrame){
+  breakfastFrame.addEventListener('load', function(){
+    const form = document.getElementById('breakfastForm');
+    const btn = document.getElementById('breakfastSubmitBtn');
+    if(form && form.dataset.submitted === 'yes'){
+      document.getElementById('breakfastSuccess').style.display='block';
+      btn.textContent='Submit breakfast report';
+      btn.disabled=false;
+      form.reset();
+      initBreakfastDefaults();
+      setTimeout(()=>{ document.getElementById('breakfastSuccess').style.display='none'; }, 5000);
+    }
+  });
+}
+
+const breakfastForm = document.getElementById('breakfastForm');
+if(breakfastForm){
+  breakfastForm.addEventListener('submit', function(e){
+    const required = ['breakfast_month','breakfast_year','breakfast_guests','breakfast_door','breakfast_expenses'];
+    for(const id of required){
+      const el = document.getElementById(id);
+      if(!el || !String(el.value).trim()){
+        e.preventDefault();
+        alert('Please complete the required breakfast report fields.');
+        if(el) el.focus();
+        return;
+      }
+    }
+    this.dataset.submitted='yes';
+    const btn = document.getElementById('breakfastSubmitBtn');
+    btn.textContent='Submitting…';
+    btn.disabled=true;
+  });
+}
+
+function loadBreakfastDashboard(){
+  const status = document.getElementById('breakfastDashboardStatus');
+  if(status) status.textContent='Loading dashboard…';
+  const old = document.getElementById('breakfastJsonp');
+  if(old) old.remove();
+  const script = document.createElement('script');
+  script.id = 'breakfastJsonp';
+  script.src = 'https://script.google.com/macros/s/AKfycbzXK6vwhmSGisQkxnXXugth4x9D7fnqKfUUpsKZ-BQtPtdFxor5DzzeHUXGrCVNq7CQ/exec?action=breakfast_data&callback=renderBreakfastDashboard&_=' + Date.now();
+  script.onerror = function(){ if(status) status.textContent='Could not load dashboard data. Make sure the Apps Script v3 is deployed.'; };
+  document.body.appendChild(script);
+}
+
+function renderBreakfastDashboard(payload){
+  const rows = (payload && payload.rows) ? payload.rows : [];
+  const status = document.getElementById('breakfastDashboardStatus');
+  if(!rows.length){
+    if(status) status.textContent='No breakfast reports have been entered yet.';
+    return;
+  }
+  if(status) status.textContent='Showing ' + rows.length + ' breakfast report(s).';
+  const labels = rows.map(r => r.label);
+  const guests = rows.map(r => Number(r.guests||0));
+  const gross = rows.map(r => Number(r.gross_total||0));
+  const expenses = rows.map(r => Number(r.expenses||0));
+  const net = rows.map(r => Number(r.net_total||0));
+  const latest = rows[rows.length-1];
+  const year = new Date().getFullYear();
+  const ytd = rows.filter(r => Number(r.year)===year).reduce((a,r)=>a+Number(r.net_total||0),0);
+  const avgGuests = Math.round(guests.reduce((a,b)=>a+b,0)/guests.length);
+  document.getElementById('kpiLatestGuests').textContent = Number(latest.guests||0).toLocaleString();
+  document.getElementById('kpiLatestNet').textContent = money(latest.net_total);
+  document.getElementById('kpiAvgGuests').textContent = avgGuests.toLocaleString();
+  document.getElementById('kpiYtdNet').textContent = money(ytd);
+  makeChart('breakfastGuestsChart','line',labels,[{label:'Guests',data:guests}], 'Guests');
+  makeChart('breakfastNetChart','bar',labels,[{label:'Net',data:net}], 'Dollars');
+  makeChart('breakfastGrossExpenseChart','bar',labels,[{label:'Gross',data:gross},{label:'Expenses',data:expenses}], 'Dollars');
+}
+
+function makeChart(canvasId,type,labels,datasets,yLabel){
+  const ctx = document.getElementById(canvasId);
+  if(!ctx || typeof Chart === 'undefined') return;
+  if(breakfastCharts[canvasId]) breakfastCharts[canvasId].destroy();
+  breakfastCharts[canvasId] = new Chart(ctx,{
+    type,
+    data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:datasets.length>1}},scales:{y:{beginAtZero:true,title:{display:true,text:yLabel}}}}
+  });
+}
+
 /* Hash routing */
 window.addEventListener('popstate',routeHash);
 function routeHash(){
   const hash=window.location.hash.replace('#','');
   if(hash==='hall-rental'){showPage('form');return;}
+  if(hash==='breakfast-tracker'){showPage('breakfast');initBreakfastDefaults();return;}
   if(hash){
     const match=committees.find(c=>c.id===hash);
     if(match){renderCommittee(match.id);showPage('committee');return;}
